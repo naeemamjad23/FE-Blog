@@ -19,6 +19,8 @@ export default function PostEditorPage() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [coverInfo, setCoverInfo] = useState<{ filename: string; size: number } | null>(null);
+  const [compressing, setCompressing] = useState(false);
+  const [compressResult, setCompressResult] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -134,6 +136,45 @@ export default function PostEditorPage() {
     } finally {
       setUploadingCover(false);
     }
+  }
+
+  async function handleCompress() {
+    if (!coverInfo) return;
+    setCompressing(true);
+    setCompressResult(null);
+    try {
+      const { data } = await api.post(`/api/media/${coverInfo.filename}/compress`);
+      const result = data.data || data;
+      setCoverInfo({ filename: result.filename, size: result.compressedSize });
+      setCompressResult(`Compressed: ${formatBytes(result.originalSize)} → ${formatBytes(result.compressedSize)} (${result.savedPercent}% saved)`);
+    } catch (err: any) {
+      setCompressResult(err.response?.data?.message || "Compression failed");
+    } finally {
+      setCompressing(false);
+    }
+  }
+
+  async function handleConvertWebp() {
+    if (!coverInfo) return;
+    setCompressing(true);
+    setCompressResult(null);
+    try {
+      const { data } = await api.post(`/api/media/${coverInfo.filename}/webp`);
+      const result = data.data || data;
+      updateField("coverImage", result.url);
+      setCoverInfo({ filename: result.filename, size: result.convertedSize });
+      setCompressResult(`Converted to WebP: ${formatBytes(result.originalSize)} → ${formatBytes(result.convertedSize)} (${result.savedPercent}% saved)`);
+    } catch (err: any) {
+      setCompressResult(err.response?.data?.message || "Conversion failed");
+    } finally {
+      setCompressing(false);
+    }
+  }
+
+  function formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1048576).toFixed(1)} MB`;
   }
 
   async function handleSave(publish?: boolean) {
@@ -283,17 +324,44 @@ export default function PostEditorPage() {
                 </div>
               )}
 
-              {/* File info bar */}
+              {/* File info bar with compress/convert options */}
               {coverInfo && !dragging && (
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm px-3 py-1.5 flex items-center justify-between">
-                  <span className="text-xs text-white/80 truncate">{coverInfo.filename}</span>
-                  <span className="text-xs text-white/60 shrink-0 ml-2">
-                    {coverInfo.size < 1024
-                      ? `${coverInfo.size} B`
-                      : coverInfo.size < 1048576
-                        ? `${(coverInfo.size / 1024).toFixed(1)} KB`
-                        : `${(coverInfo.size / 1048576).toFixed(1)} MB`}
-                  </span>
+                <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm px-3 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-white/70 truncate">{coverInfo.filename}</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-white/50">{formatBytes(coverInfo.size)}</span>
+                      {compressing ? (
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          {coverInfo.filename.match(/\.png$/i) && (
+                            <button
+                              type="button"
+                              onClick={handleCompress}
+                              className="px-2 py-0.5 text-[10px] font-medium bg-white/20 hover:bg-white/30 text-white rounded transition-colors"
+                              title="Compress PNG with pngquant"
+                            >
+                              Compress
+                            </button>
+                          )}
+                          {coverInfo.filename.match(/\.(png|jpe?g|tiff)$/i) && (
+                            <button
+                              type="button"
+                              onClick={handleConvertWebp}
+                              className="px-2 py-0.5 text-[10px] font-medium bg-emerald-500/80 hover:bg-emerald-500 text-white rounded transition-colors"
+                              title="Convert to WebP (smallest size)"
+                            >
+                              WebP
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {compressResult && (
+                    <p className="text-[10px] text-emerald-300 mt-1">{compressResult}</p>
+                  )}
                 </div>
               )}
             </div>
