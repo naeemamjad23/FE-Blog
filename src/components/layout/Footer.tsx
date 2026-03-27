@@ -45,11 +45,11 @@ export function Footer() {
             <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">Domains</h4>
             <ul className="space-y-2.5 text-sm">
               {[
-                { label: "AppSec", href: "/appsec" },
-                { label: "Cloud Security", href: "/cloud-security" },
-                { label: "Pentesting", href: "/pentesting" },
-                { label: "DevSecOps", href: "/devsecops" },
-                { label: "Threat Intel", href: "/threat-intelligence" },
+                { label: "Security & Risk Mgmt", href: "/security-risk-management" },
+                { label: "Asset Security", href: "/asset-security" },
+                { label: "Security Architecture", href: "/security-architecture" },
+                { label: "Network Security", href: "/network-security" },
+                { label: "IAM", href: "/iam" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="hover:text-white transition-colors">{link.label}</Link>
@@ -63,10 +63,10 @@ export function Footer() {
             <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">More</h4>
             <ul className="space-y-2.5 text-sm">
               {[
-                { label: "Network Security", href: "/network-security" },
-                { label: "GRC", href: "/grc" },
-                { label: "SOC & IR", href: "/soc-ir" },
-                { label: "RSS Feed", href: "/rss.xml" },
+                { label: "Security Assessment", href: "/security-assessment" },
+                { label: "Security Operations", href: "/security-operations" },
+                { label: "Software Dev Security", href: "/software-development-security" },
+                { label: "Cloud & Platform", href: "/cloud-platform-security" },
                 { label: "SecureMango.com", href: "https://securemango.com" },
               ].map((link) => (
                 <li key={link.href}>

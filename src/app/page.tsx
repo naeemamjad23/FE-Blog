@@ -95,7 +95,7 @@ export default async function HomePage() {
         <section className="py-16">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Explore Domains</h2>
-            <p className="text-gray-500 mt-1">Dive into 8 core areas of cybersecurity</p>
+            <p className="text-gray-500 mt-1">Dive into 9 core areas of cybersecurity</p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 stagger-children">
             {domains.map((domain) => (

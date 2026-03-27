@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { slugify, estimateReadTime } from "@/lib/utils";
-import type { Domain, Author } from "@/types";
+import type { Domain, Author, Series } from "@/types";
 
 export default function PostEditorPage() {
   const router = useRouter();
@@ -15,6 +15,7 @@ export default function PostEditorPage() {
 
   const [domains, setDomains] = useState<Domain[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
+  const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -48,6 +49,7 @@ export default function PostEditorPage() {
     Promise.all([
       api.get("/api/domains").then(({ data }) => setDomains(data.data || data)),
       api.get("/api/authors").then(({ data }) => setAuthors(data.data || data)),
+      api.get("/api/series").then(({ data }) => setSeriesList(data.data || data)),
     ]);
 
     if (!isNew) {
@@ -411,6 +413,24 @@ export default function PostEditorPage() {
               className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-700 placeholder:text-gray-300 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>
+        </div>
+
+        {/* Series */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Series (optional)</label>
+            <select
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              value={form.seriesId}
+              onChange={(e) => updateField("seriesId", e.target.value)}
+            >
+              <option value="">No series</option>
+              {seriesList.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}
+            </select>
+          </div>
+          {form.seriesId && (
+            <Input label="Order in Series" type="number" value={String(form.seriesOrder)} onChange={(e) => updateField("seriesOrder", parseInt(e.target.value) || 0)} />
+          )}
         </div>
 
         {/* Flags */}

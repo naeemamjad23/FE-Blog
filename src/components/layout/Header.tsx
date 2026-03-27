@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { SITE_NAME, NAV_LINKS } from "@/lib/constants";
+import { SITE_NAME, NAV_LINKS, ICON_MAP, SUB_DOMAINS } from "@/lib/constants";
 import type { Domain } from "@/types";
 
 interface HeaderProps {
@@ -13,6 +13,7 @@ interface HeaderProps {
 export function Header({ domains = [] }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [domainsOpen, setDomainsOpen] = useState(false);
+  const [hoveredDomain, setHoveredDomain] = useState<string | null>(null);
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100 transition-all">
@@ -31,51 +32,77 @@ export function Header({ domains = [] }: HeaderProps) {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
             {/* Domains dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setDomainsOpen(!domainsOpen)}
+            <div
+              className="relative"
+              onMouseEnter={() => setDomainsOpen(true)}
+              onMouseLeave={() => setDomainsOpen(false)}
+            >
+              <Link
+                href="/"
                 className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg flex items-center gap-1.5 transition-colors"
               >
                 Domains
                 <svg className={`w-3.5 h-3.5 transition-transform ${domainsOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-              </button>
+              </Link>
               {domainsOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setDomainsOpen(false)} />
-                  <div className="absolute top-full left-0 mt-1 w-72 rounded-xl bg-white shadow-xl border border-gray-100 py-2 z-50 animate-scale-in">
+                  <div className="absolute top-full left-0 pt-1 z-50">
+                  <div className="w-72 rounded-xl bg-white shadow-xl border border-gray-100 py-2 animate-scale-in">
                     <div className="px-3 py-2 mb-1">
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Cybersecurity Domains</p>
                     </div>
                     {domains.map((domain) => (
-                      <Link
+                      <div
                         key={domain.slug}
-                        href={`/${domain.slug}`}
-                        className="flex items-center gap-3 px-3 py-2.5 mx-1 rounded-lg hover:bg-gray-50 transition-colors group/item"
-                        onClick={() => setDomainsOpen(false)}
+                        className="relative"
+                        onMouseEnter={() => setHoveredDomain(domain.slug)}
+                        onMouseLeave={() => setHoveredDomain(null)}
                       >
-                        <span
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
-                          style={{ backgroundColor: `${domain.color}12`, color: domain.color || "#6B7280" }}
+                        <Link
+                          href={`/${domain.slug}`}
+                          className="flex items-center gap-3 px-3 py-2.5 mx-1 rounded-lg hover:bg-gray-50 transition-colors group/item"
+                          onClick={() => setDomainsOpen(false)}
                         >
-                          {domain.icon === "Shield" && "🛡️"}
-                          {domain.icon === "Network" && "🌐"}
-                          {domain.icon === "Cloud" && "☁️"}
-                          {domain.icon === "Search" && "🔍"}
-                          {domain.icon === "FileCheck" && "📋"}
-                          {domain.icon === "Target" && "🎯"}
-                          {domain.icon === "AlertTriangle" && "⚠️"}
-                          {domain.icon === "Code" && "💻"}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 group-hover/item:text-emerald-700 transition-colors">{domain.name}</p>
-                          <p className="text-xs text-gray-400 truncate">{domain._count?.posts || 0} articles</p>
-                        </div>
-                      </Link>
+                          <span
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
+                            style={{ backgroundColor: `${domain.color}12`, color: domain.color || "#6B7280" }}
+                          >
+                            {ICON_MAP[domain.icon || ""] || "📁"}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-gray-900 group-hover/item:text-emerald-700 transition-colors">{domain.name}</p>
+                            <p className="text-xs text-gray-400 truncate">{domain._count?.posts || 0} articles</p>
+                          </div>
+                          {SUB_DOMAINS[domain.slug] && (
+                            <svg className="w-3.5 h-3.5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          )}
+                        </Link>
+                        {/* Cascading submenu */}
+                        {SUB_DOMAINS[domain.slug] && hoveredDomain === domain.slug && (
+                          <div className="absolute left-full top-0 ml-1 w-56 rounded-xl bg-white shadow-xl border border-gray-100 py-2 z-50 animate-scale-in">
+                            <div className="px-3 py-1.5 mb-1">
+                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{domain.name}</p>
+                            </div>
+                            {SUB_DOMAINS[domain.slug].map((sub) => (
+                              <Link
+                                key={sub.slug}
+                                href={`/${sub.slug}`}
+                                className="flex items-center gap-2.5 px-3 py-2 mx-1 rounded-lg hover:bg-gray-50 transition-colors group/sub"
+                                onClick={() => setDomainsOpen(false)}
+                              >
+                                <span className="text-sm">{sub.icon}</span>
+                                <span className="text-sm font-medium text-gray-700 group-hover/sub:text-emerald-700 transition-colors">{sub.label}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
-                </>
+                  </div>
               )}
             </div>
 

@@ -79,25 +79,28 @@ export default async function PostPage({ params }: Props) {
         ]}
       />
 
+      {/* Cover image */}
+      {post.coverImage && (
+        <div className="relative rounded-2xl overflow-hidden mb-8 shadow-lg shadow-gray-200/50">
+          <img
+            src={post.coverImage}
+            alt={post.title}
+            className="w-full aspect-[16/9] object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+        </div>
+      )}
+
       {/* Header */}
-      <header className="mb-8">
+      <header className="mb-10">
         {post.isSponsored && (
           <div className="mb-4">
             <SponsoredBadge sponsorName={post.sponsorName || undefined} sponsorUrl={post.sponsorUrl || undefined} />
           </div>
         )}
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
+        <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-bold text-gray-900 mb-4 leading-tight tracking-tight">{post.title}</h1>
         <PostMeta post={post} />
       </header>
-
-      {/* Cover image */}
-      {post.coverImage && (
-        <img
-          src={post.coverImage}
-          alt={post.title}
-          className="w-full rounded-xl mb-8 aspect-[16/9] object-cover"
-        />
-      )}
 
       {/* Content */}
       <PremiumGate isPremium={post.isPremium}>
