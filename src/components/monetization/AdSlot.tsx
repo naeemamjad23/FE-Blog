@@ -4,17 +4,16 @@ interface AdSlotProps {
 }
 
 export function AdSlot({ position, className }: AdSlotProps) {
-  // Placeholder for ad integration (Google AdSense, Carbon Ads, etc.)
-  // Replace the placeholder with actual ad code when ready
+  // Placeholder for ad integration — replace with actual ad code (Google AdSense, Carbon Ads, etc.)
   return (
     <div
-      className={`bg-gray-50 border border-dashed border-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-400 ${className}`}
+      className={`rounded-xl bg-gray-50/50 border border-gray-100 flex items-center justify-center text-[11px] text-gray-300 ${className || ""}`}
       style={{
-        minHeight: position === "sidebar" ? "250px" : position === "header" ? "90px" : "120px",
+        minHeight: position === "sidebar" ? "250px" : position === "header" ? "90px" : "100px",
       }}
       data-ad-position={position}
     >
-      Ad Space — {position}
+      Advertisement
     </div>
   );
 }

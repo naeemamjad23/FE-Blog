@@ -14,9 +14,9 @@ interface TocItem {
 
 export function PostContent({ content }: PostContentProps) {
   const [toc, setToc] = useState<TocItem[]>([]);
+  const [activeId, setActiveId] = useState("");
 
   useEffect(() => {
-    // Extract headings for table of contents
     const headingRegex = /<h([2-3])[^>]*id="([^"]*)"[^>]*>([^<]*)<\/h\1>/g;
     const items: TocItem[] = [];
     let match;
@@ -26,28 +26,67 @@ export function PostContent({ content }: PostContentProps) {
     setToc(items);
   }, [content]);
 
+  // Track active heading via IntersectionObserver
+  useEffect(() => {
+    if (toc.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-80px 0px -80% 0px" }
+    );
+    toc.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [toc]);
+
+  // Reading progress
+  useEffect(() => {
+    const bar = document.createElement("div");
+    bar.className = "reading-progress";
+    document.body.appendChild(bar);
+
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.width = `${(scrollTop / docHeight) * 100}%`;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      bar.remove();
+    };
+  }, []);
+
   return (
-    <div className="flex gap-8">
+    <div className="flex gap-10">
       <article
-        className="prose prose-gray prose-lg max-w-none flex-1
-          prose-headings:scroll-mt-20
-          prose-a:text-emerald-600 prose-a:no-underline hover:prose-a:underline
-          prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded
-          prose-img:rounded-xl"
+        className="prose-blog max-w-none flex-1"
         dangerouslySetInnerHTML={{ __html: content }}
       />
 
       {/* Table of Contents */}
       {toc.length > 0 && (
-        <nav className="hidden xl:block w-64 shrink-0">
+        <nav className="hidden xl:block w-56 shrink-0">
           <div className="sticky top-24">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">On this page</h4>
-            <ul className="space-y-2 text-sm">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">On this page</p>
+            <ul className="space-y-1 border-l border-gray-100">
               {toc.map((item) => (
-                <li key={item.id} style={{ paddingLeft: `${(item.level - 2) * 12}px` }}>
+                <li key={item.id}>
                   <a
                     href={`#${item.id}`}
-                    className="text-gray-500 hover:text-gray-900 transition-colors"
+                    className={`block text-[13px] leading-snug py-1.5 transition-all border-l-2 -ml-px ${
+                      activeId === item.id
+                        ? "border-emerald-500 text-emerald-700 font-medium"
+                        : "border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300"
+                    }`}
+                    style={{ paddingLeft: `${(item.level - 1) * 12}px` }}
                   >
                     {item.text}
                   </a>

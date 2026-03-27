@@ -1,52 +1,91 @@
 import Link from "next/link";
-import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/constants";
+import { SITE_NAME } from "@/lib/constants";
 import { NewsletterSignup } from "@/components/lead-gen/NewsletterSignup";
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-auto">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="bg-slate-900 text-slate-400 mt-auto">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Main footer */}
+        <div className="py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand */}
-          <div className="md:col-span-1">
-            <h3 className="text-white font-bold text-lg mb-2">🥭 {SITE_NAME}</h3>
-            <p className="text-sm text-gray-400">{SITE_DESCRIPTION}</p>
+          <div className="col-span-2">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-sm font-bold">
+                S
+              </div>
+              <span className="text-lg font-bold text-white tracking-tight">{SITE_NAME}</span>
+            </div>
+            <p className="text-sm text-slate-400 leading-relaxed mb-5 max-w-xs">
+              Cybersecurity insights and tutorials across 8 domains. From AppSec to DevSecOps.
+            </p>
+            <NewsletterSignup compact source="footer" />
           </div>
 
-          {/* Quick Links */}
+          {/* Navigation */}
           <div>
-            <h4 className="text-white font-semibold text-sm mb-3">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
-              <li><Link href="/series" className="hover:text-white transition-colors">Series</Link></li>
-              <li><Link href="/resources" className="hover:text-white transition-colors">Resources</Link></li>
-              <li><Link href="/newsletter" className="hover:text-white transition-colors">Newsletter</Link></li>
+            <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">Navigate</h4>
+            <ul className="space-y-2.5 text-sm">
+              {[
+                { label: "Home", href: "/" },
+                { label: "Series", href: "/series" },
+                { label: "Resources", href: "/resources" },
+                { label: "Newsletter", href: "/newsletter" },
+                { label: "Search", href: "/search" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-white transition-colors">{link.label}</Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Domains */}
           <div>
-            <h4 className="text-white font-semibold text-sm mb-3">Domains</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/appsec" className="hover:text-white transition-colors">AppSec</Link></li>
-              <li><Link href="/cloud-security" className="hover:text-white transition-colors">Cloud Security</Link></li>
-              <li><Link href="/pentesting" className="hover:text-white transition-colors">Pentesting</Link></li>
-              <li><Link href="/devsecops" className="hover:text-white transition-colors">DevSecOps</Link></li>
+            <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">Domains</h4>
+            <ul className="space-y-2.5 text-sm">
+              {[
+                { label: "AppSec", href: "/appsec" },
+                { label: "Cloud Security", href: "/cloud-security" },
+                { label: "Pentesting", href: "/pentesting" },
+                { label: "DevSecOps", href: "/devsecops" },
+                { label: "Threat Intel", href: "/threat-intelligence" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-white transition-colors">{link.label}</Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* More */}
           <div>
-            <h4 className="text-white font-semibold text-sm mb-3">Stay Updated</h4>
-            <NewsletterSignup compact />
+            <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">More</h4>
+            <ul className="space-y-2.5 text-sm">
+              {[
+                { label: "Network Security", href: "/network-security" },
+                { label: "GRC", href: "/grc" },
+                { label: "SOC & IR", href: "/soc-ir" },
+                { label: "RSS Feed", href: "/rss.xml" },
+                { label: "SecureMango.com", href: "https://securemango.com" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-white transition-colors">{link.label}</Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm">
+        {/* Bottom bar */}
+        <div className="py-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500">
           <p>&copy; {new Date().getFullYear()} SecureMango. All rights reserved.</p>
-          <div className="flex gap-4">
-            <Link href="/rss.xml" className="hover:text-white transition-colors">RSS</Link>
-            <Link href="https://securemango.com" className="hover:text-white transition-colors">SecureMango.com</Link>
+          <div className="flex items-center gap-4">
+            <Link href="https://securemango.com" className="hover:text-slate-300 transition-colors">Main Site</Link>
+            <span className="text-slate-700">|</span>
+            <Link href="/rss.xml" className="hover:text-slate-300 transition-colors">RSS</Link>
+            <span className="text-slate-700">|</span>
+            <Link href="/sitemap.xml" className="hover:text-slate-300 transition-colors">Sitemap</Link>
           </div>
         </div>
       </div>

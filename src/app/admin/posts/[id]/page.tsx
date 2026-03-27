@@ -16,6 +16,9 @@ export default function PostEditorPage() {
   const [domains, setDomains] = useState<Domain[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [coverInfo, setCoverInfo] = useState<{ filename: string; size: number } | null>(null);
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -90,14 +93,59 @@ export default function PostEditorPage() {
     });
   }
 
-  async function handleSave() {
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCover(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const { data } = await api.post("/api/media/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const result = data.data || data;
+      updateField("coverImage", result.url);
+      setCoverInfo({ filename: result.filename, size: result.size });
+    } catch {
+      alert("Upload failed. Try again or paste a URL instead.");
+    } finally {
+      setUploadingCover(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleCoverDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    setUploadingCover(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const { data } = await api.post("/api/media/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const result = data.data || data;
+      updateField("coverImage", result.url);
+      setCoverInfo({ filename: result.filename, size: result.size });
+    } catch {
+      alert("Upload failed. Try again or paste a URL instead.");
+    } finally {
+      setUploadingCover(false);
+    }
+  }
+
+  async function handleSave(publish?: boolean) {
     setSaving(true);
     try {
+      const published = publish ?? form.published;
       const payload = {
         ...form,
+        published,
         seriesOrder: form.seriesOrder || undefined,
         seriesId: form.seriesId || undefined,
-        publishedAt: form.published ? new Date().toISOString() : undefined,
+        publishedAt: published ? new Date().toISOString() : undefined,
       };
 
       if (isNew) {
@@ -119,10 +167,10 @@ export default function PostEditorPage() {
         <h1 className="text-2xl font-bold text-gray-900">{isNew ? "New Post" : "Edit Post"}</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => router.push("/admin/posts")}>Cancel</Button>
-          <Button onClick={() => { updateField("published", false); handleSave(); }} variant="secondary" disabled={saving}>
+          <Button onClick={() => handleSave(false)} variant="secondary" disabled={saving}>
             Save Draft
           </Button>
-          <Button onClick={() => { updateField("published", true); handleSave(); }} disabled={saving}>
+          <Button onClick={() => handleSave(true)} disabled={saving}>
             {saving ? "Saving..." : "Publish"}
           </Button>
         </div>
@@ -177,7 +225,125 @@ export default function PostEditorPage() {
           />
         </div>
 
-        <Input label="Cover Image URL" value={form.coverImage} onChange={(e) => updateField("coverImage", e.target.value)} />
+        {/* Cover Image - Drag & Drop / Click Upload / URL */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
+
+          {form.coverImage ? (
+            /* Preview with replace/remove + drag-to-swap */
+            <div
+              className={`relative rounded-xl overflow-hidden border-2 group transition-colors ${
+                dragging ? "border-emerald-400" : "border-gray-200"
+              }`}
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={handleCoverDrop}
+            >
+              <img
+                src={form.coverImage}
+                alt="Cover preview"
+                className="w-full h-48 object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).src = ''; }}
+              />
+
+              {/* Drag overlay */}
+              {dragging && (
+                <div className="absolute inset-0 bg-emerald-500/20 backdrop-blur-[2px] flex items-center justify-center z-10">
+                  <div className="bg-white rounded-xl px-5 py-3 shadow-lg text-center">
+                    <svg className="w-6 h-6 text-emerald-500 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p className="text-sm font-medium text-gray-700">Drop to swap image</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Hover controls */}
+              {!dragging && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                  <label className="px-3 py-1.5 bg-white rounded-lg text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors shadow-sm">
+                    Replace
+                    <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => { updateField("coverImage", ""); setCoverInfo(null); }}
+                    className="px-3 py-1.5 bg-red-500 rounded-lg text-sm font-medium text-white hover:bg-red-600 transition-colors shadow-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+
+              {/* Upload spinner */}
+              {uploadingCover && (
+                <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-20">
+                  <span className="w-7 h-7 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
+                  <span className="text-xs text-gray-500 mt-2">Uploading...</span>
+                </div>
+              )}
+
+              {/* File info bar */}
+              {coverInfo && !dragging && (
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm px-3 py-1.5 flex items-center justify-between">
+                  <span className="text-xs text-white/80 truncate">{coverInfo.filename}</span>
+                  <span className="text-xs text-white/60 shrink-0 ml-2">
+                    {coverInfo.size < 1024
+                      ? `${coverInfo.size} B`
+                      : coverInfo.size < 1048576
+                        ? `${(coverInfo.size / 1024).toFixed(1)} KB`
+                        : `${(coverInfo.size / 1048576).toFixed(1)} MB`}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Drag & Drop Zone */
+            <div
+              className={`relative rounded-xl border-2 border-dashed transition-colors ${
+                dragging
+                  ? "border-emerald-400 bg-emerald-50"
+                  : "border-gray-300 hover:border-gray-400 bg-gray-50/50"
+              }`}
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={handleCoverDrop}
+            >
+              <label className="flex flex-col items-center justify-center py-10 cursor-pointer">
+                {uploadingCover ? (
+                  <span className="w-8 h-8 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors ${
+                      dragging ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-400"
+                    }`}>
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-medium text-gray-700 mb-1">
+                      {dragging ? "Drop image here" : "Drag & drop an image, or click to browse"}
+                    </p>
+                    <p className="text-xs text-gray-400">PNG, JPG, WebP up to 10MB</p>
+                  </>
+                )}
+                <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+              </label>
+            </div>
+          )}
+
+          {/* Or paste URL */}
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-xs text-gray-400">or paste URL:</span>
+            <input
+              type="text"
+              placeholder="https://example.com/image.png"
+              value={form.coverImage}
+              onChange={(e) => updateField("coverImage", e.target.value)}
+              className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-700 placeholder:text-gray-300 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            />
+          </div>
+        </div>
 
         {/* Flags */}
         <div className="flex flex-wrap gap-4">
