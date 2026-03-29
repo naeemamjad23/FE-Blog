@@ -5,6 +5,8 @@ import { NewsletterSignup } from "@/components/lead-gen/NewsletterSignup";
 import { SITE_DESCRIPTION } from "@/lib/constants";
 import type { Domain, Post, PaginatedResponse } from "@/types";
 
+export const revalidate = 60;
+
 async function getDomains(): Promise<Domain[]> {
   try {
     const data = await fetchAPI<{ data: Domain[] } | Domain[]>("/api/domains");
@@ -97,7 +99,7 @@ export default async function HomePage() {
             <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Explore Domains</h2>
             <p className="text-gray-500 mt-1">Dive into 9 core areas of cybersecurity</p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 stagger-children">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 stagger-children overflow-visible pb-48">
             {domains.map((domain) => (
               <DomainCard key={domain.id} domain={domain} />
             ))}

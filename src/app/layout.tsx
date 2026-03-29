@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
 async function getDomains(): Promise<Domain[]> {
   try {
     const API_URL = process.env.API_URL || "http://localhost:4001";
-    const res = await fetch(`${API_URL}/api/domains`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${API_URL}/api/domains`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
     const data = await res.json();
     return data.data || data;
@@ -42,6 +43,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-VTFLLQFY9M"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-VTFLLQFY9M');
+          `}
+        </Script>
+      </head>
       <body className="min-h-full flex flex-col bg-white">
         <OrganizationJsonLd />
         <Header domains={domains} />

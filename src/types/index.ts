@@ -7,6 +7,7 @@ export interface Domain {
   color?: string;
   sortOrder: number;
   _count?: { posts: number; series: number };
+  subDomainCounts?: Record<string, number>;
 }
 
 export interface Author {

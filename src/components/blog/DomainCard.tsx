@@ -28,7 +28,7 @@ export function DomainCard({ domain }: DomainCardProps) {
 
   return (
     <div
-      className="relative"
+      className={`relative ${showSubs ? "z-50" : "z-0"}`}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
     >
@@ -67,7 +67,7 @@ export function DomainCard({ domain }: DomainCardProps) {
 
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-gray-400">
-                {domain._count?.posts || 0} articles
+                {domain._count?.posts || 0} articles · {subs?.length || 0} sub-domains
               </span>
               <span className="text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all duration-300">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,26 +81,33 @@ export function DomainCard({ domain }: DomainCardProps) {
 
       {/* Submenu popover */}
       {subs && showSubs && (
-        <div className="absolute left-0 right-0 top-full z-40 pt-1 animate-fade-in">
+        <div className="absolute left-0 right-0 top-full z-50 pt-1 animate-fade-in">
           <div
             className="rounded-xl bg-white shadow-xl border border-gray-100 py-2 overflow-hidden"
             style={{ borderTop: `2px solid ${color}` }}
           >
-            {subs.map((sub) => (
+            {subs.map((sub) => {
+              const focusKey = sub.slug.split("focus=")[1] || "";
+              const count = domain.subDomainCounts?.[focusKey] || 0;
+              return (
               <Link
                 key={sub.slug}
                 href={`/${sub.slug}`}
                 className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-gray-50 transition-colors group/sub"
               >
                 <span className="text-sm">{sub.icon}</span>
-                <span className="text-sm font-medium text-gray-700 group-hover/sub:text-emerald-700 transition-colors">
+                <span className="text-sm font-medium text-gray-700 group-hover/sub:text-emerald-700 transition-colors flex-1">
                   {sub.label}
                 </span>
-                <svg className="w-3.5 h-3.5 text-gray-300 group-hover/sub:text-emerald-500 ml-auto transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {count > 0 && (
+                  <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">{count}</span>
+                )}
+                <svg className="w-3.5 h-3.5 text-gray-300 group-hover/sub:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
