@@ -1,8 +1,6 @@
 import { fetchAPI } from "@/lib/api";
 import { LeadMagnetCard } from "@/components/lead-gen/LeadMagnetCard";
-import { PostCard } from "@/components/blog/PostCard";
-import { ICON_MAP, SUB_DOMAINS } from "@/lib/constants";
-import Link from "next/link";
+import { ResourcesFilter } from "@/components/blog/ResourcesFilter";
 import type { Metadata } from "next";
 import type { LeadMagnet, Domain, Post } from "@/types";
 
@@ -24,7 +22,6 @@ export default async function ResourcesPage() {
     resources = Array.isArray(resData) ? resData : resData.data;
     domains = Array.isArray(domData) ? domData : domData.data;
 
-    // Fetch posts for each domain in parallel
     const postResults = await Promise.all(
       domains.map((d) =>
         fetchAPI<{ data: { posts: Post[] } } | { posts: Post[] }>(`/api/posts/domain/${d.slug}?limit=50`)
@@ -40,13 +37,11 @@ export default async function ResourcesPage() {
     }
   } catch {}
 
-  const totalPosts = Object.values(postsByDomain).reduce((sum, posts) => sum + posts.length, 0);
-
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Resources</h1>
       <p className="text-gray-600 mb-10">
-        Explore {totalPosts} articles across {domains.length} cybersecurity domains.
+        Explore articles across {domains.length} cybersecurity domains.
       </p>
 
       {/* Free Downloads */}
@@ -61,71 +56,10 @@ export default async function ResourcesPage() {
         </section>
       )}
 
-      {/* Explore Domains */}
+      {/* Explore Domains with Filters */}
       <section>
-        <h2 className="text-xl font-bold text-gray-900 mb-8">Explore Domains</h2>
-        <div className="space-y-12">
-          {domains.map((domain) => {
-            const posts = postsByDomain[domain.slug] || [];
-            const subs = SUB_DOMAINS[domain.slug];
-            const color = domain.color || "#6B7280";
-
-            return (
-              <div key={domain.id}>
-                {/* Domain Header */}
-                <div className="flex items-center gap-3 mb-4">
-                  <span
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
-                    style={{ backgroundColor: `${color}12`, color }}
-                  >
-                    {ICON_MAP[domain.icon || ""] || "📁"}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <Link href={`/${domain.slug}`} className="text-lg font-bold text-gray-900 hover:text-emerald-700 transition-colors">
-                      {domain.name}
-                    </Link>
-                    <p className="text-sm text-gray-500">{domain.description}</p>
-                  </div>
-                  <Link
-                    href={`/${domain.slug}`}
-                    className="text-sm font-medium text-emerald-600 hover:text-emerald-700 shrink-0 hidden sm:block"
-                  >
-                    View all →
-                  </Link>
-                </div>
-
-                {/* Sub-domains */}
-                {subs && (
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {subs.map((sub) => (
-                      <Link
-                        key={sub.slug}
-                        href={`/${sub.slug}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 border border-gray-100 hover:border-emerald-200 transition-colors"
-                      >
-                        <span>{sub.icon}</span>
-                        {sub.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                {/* Posts */}
-                {posts.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {posts.map((post) => (
-                      <PostCard key={post.id} post={post} />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-400 py-4 border border-dashed border-gray-200 rounded-xl text-center">
-                    No articles yet — content coming soon.
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-6">Explore Domains</h2>
+        <ResourcesFilter domains={domains} postsByDomain={postsByDomain} />
       </section>
     </div>
   );
