@@ -123,3 +123,46 @@ export interface AnalyticsOverview {
   totalComments: number;
   pendingComments: number;
 }
+
+export interface TimeSeriesPoint {
+  date: string;
+  count: number;
+}
+
+export interface DomainViews {
+  name: string;
+  slug: string;
+  color: string | null;
+  views: number;
+  postCount: number;
+}
+
+export interface SourceBreakdown {
+  source: string;
+  count: number;
+}
+
+export interface TopPost {
+  id: string;
+  title: string;
+  slug: string;
+  viewCount: number;
+  publishedAt: string;
+  domain: { name: string; slug: string; color: string | null };
+}
+
+export interface AffiliateStats {
+  links: {
+    id: string;
+    productName: string;
+    network: string | null;
+    clickCount: number;
+    conversionCount: number;
+    post: { title: string; slug: string } | null;
+  }[];
+  totals: {
+    totalLinks: number;
+    totalClicks: number;
+    totalConversions: number;
+  };
+}

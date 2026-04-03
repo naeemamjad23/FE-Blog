@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { fetchAPI } from "@/lib/api";
 import { PostContent } from "@/components/blog/PostContent";
 import { PostMeta } from "@/components/blog/PostMeta";
@@ -82,9 +83,13 @@ export default async function PostPage({ params }: Props) {
       {/* Cover image */}
       {post.coverImage && (
         <div className="relative rounded-2xl overflow-hidden mb-8 shadow-lg shadow-gray-200/50">
-          <img
+          <Image
             src={post.coverImage}
             alt={post.title}
+            width={1200}
+            height={675}
+            priority
+            sizes="(max-width: 1024px) 100vw, 896px"
             className="w-full aspect-[16/9] object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />

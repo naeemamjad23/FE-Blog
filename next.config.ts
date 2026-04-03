@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
         pathname: "/uploads/**",
       },
     ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "blog.securemango.com",
+        pathname: "/uploads/**",
+      },
+    ],
   },
 };
 
