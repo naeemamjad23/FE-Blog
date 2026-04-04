@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { formatDate } from "@/lib/utils";
 import { DomainBadge } from "./DomainBadge";
 import type { Post } from "@/types";
@@ -14,7 +13,7 @@ export function PostMeta({ post }: PostMetaProps) {
       {/* Author */}
       <Link href={`/author/${post.author.slug}`} className="flex items-center gap-2 hover:text-gray-900">
         {post.author.avatar ? (
-          <Image src={post.author.avatar} alt={post.author.name} width={32} height={32} className="rounded-full" />
+          <img src={post.author.avatar} alt={post.author.name} width={32} height={32} className="rounded-full" />
         ) : (
           <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs">
             {post.author.name.charAt(0)}

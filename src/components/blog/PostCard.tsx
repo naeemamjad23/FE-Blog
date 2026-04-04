@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { DomainBadge } from "./DomainBadge";
 import { formatDate } from "@/lib/utils";
 import type { Post } from "@/types";
@@ -20,12 +19,11 @@ export function PostCard({ post, featured = false }: PostCardProps) {
       {/* Image */}
       {post.coverImage ? (
         <div className={`relative overflow-hidden ${featured ? "md:w-1/2" : "aspect-[16/9]"}`}>
-          <Image
+          <img
             src={post.coverImage}
             alt={post.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           {post.isPremium && (

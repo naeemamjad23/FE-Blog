@@ -121,16 +121,21 @@ export function ResourcesFilter({ domains, postsByDomain }: ResourcesFilterProps
               {/* Sub-domains */}
               {subs && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {subs.map((sub) => (
-                    <Link
-                      key={sub.slug}
-                      href={`/${sub.slug}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 border border-gray-100 hover:border-emerald-200 transition-colors"
-                    >
-                      <span>{sub.icon}</span>
-                      {sub.label}
-                    </Link>
-                  ))}
+                  {subs.map((sub) => {
+                    const sdCounts = domain.subDomainCounts || {};
+                    const count = sub.tags.reduce((sum, tag) => sum + (sdCounts[tag] || 0), 0);
+                    return (
+                      <Link
+                        key={sub.slug}
+                        href={`/${sub.slug}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 border border-gray-100 hover:border-emerald-200 transition-colors"
+                      >
+                        <span>{sub.icon}</span>
+                        {sub.label}
+                        {count > 0 && <span className="text-gray-400 ml-0.5">{count}</span>}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
 

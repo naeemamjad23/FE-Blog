@@ -32,7 +32,8 @@ async function getDomains(): Promise<Domain[]> {
     const res = await fetch(`${API_URL}/api/domains`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
     const data = await res.json();
-    return data.data || data;
+    const domains = data.data || data;
+    return domains.map((d: any) => ({ ...d, postCount: d._count?.posts ?? 0, seriesCount: d._count?.series ?? 0 }));
   } catch {
     return [];
   }

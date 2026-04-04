@@ -67,7 +67,7 @@ export function DomainCard({ domain }: DomainCardProps) {
 
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-gray-400">
-                {domain._count?.posts || 0} articles · {subs?.length || 0} sub-domains
+                {domain.postCount ?? domain._count?.posts ?? 0} articles · {subs?.length || 0} sub-domains
               </span>
               <span className="text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all duration-300">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

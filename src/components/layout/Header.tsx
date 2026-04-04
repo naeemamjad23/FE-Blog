@@ -72,7 +72,7 @@ export function Header({ domains = [] }: HeaderProps) {
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium text-gray-900 group-hover/item:text-emerald-700 transition-colors">{domain.name}</p>
-                            <p className="text-xs text-gray-400 truncate">{domain._count?.posts || 0} articles · {SUB_DOMAINS[domain.slug]?.length || 0} sub-domains</p>
+                            <p className="text-xs text-gray-400 truncate">{domain.postCount ?? domain._count?.posts ?? 0} articles · {SUB_DOMAINS[domain.slug]?.length || 0} sub-domains</p>
                           </div>
                           {SUB_DOMAINS[domain.slug] && (
                             <svg className="w-3.5 h-3.5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,8 +87,8 @@ export function Header({ domains = [] }: HeaderProps) {
                               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{domain.name}</p>
                             </div>
                             {SUB_DOMAINS[domain.slug].map((sub) => {
-                              const focusKey = sub.slug.split("focus=")[1] || "";
-                              const count = domain.subDomainCounts?.[focusKey] || 0;
+                              const sdCounts = domain.subDomainCounts || {};
+                              const count = sub.tags.reduce((sum: number, tag: string) => sum + (sdCounts[tag] || 0), 0);
                               return (
                               <Link
                                 key={sub.slug}
